@@ -1,0 +1,205 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: serverless framework deploy pipeline example
+Parameters:
+  ServiceName:
+    Description: serverless framework deploy pipeline example
+    Type: String
+    Default: serverless-deploy-example
+
+  Env:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - prd
+
+  GithubRepositoryId:
+    Type: String
+
+  GithubConnectionArn:
+    Type: String
+
+  GithubRepositoryBranchName:
+    Type: String
+    Default: develop
+    AllowedValues:
+      - develop
+      - main
+
+Resources:
+  # ビルド成果物を格納するS3バケット
+  ArtifactsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ${ServiceName}-artifacts-${Env}
+      LifecycleConfiguration:
+        Rules:
+          - Id: DeleteRule
+            Status: Enabled
+            ExpirationInDays: 7
+  # CodeBuild
+  CodeBuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub ${ServiceName}-${Env}
+      Artifacts:
+        Type: CODEPIPELINE
+      Source:
+        Type: CODEPIPELINE
+      Environment:
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/standard:3.0
+        PrivilegedMode: true
+        Type: LINUX_CONTAINER
+        EnvironmentVariables:
+          - Name: DEPLOY_ENV
+            Value: !Sub ${Env}
+      ServiceRole: !GetAtt CodeBuildServiceRole.Arn
+  # CodeBuildのIAMロール
+  CodeBuildServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${ServiceName}-CodeBuildServiceRole-${Env}
+      Policies:
+        - PolicyName: !Sub ${ServiceName}-CodeBuild-ServiceRolePolicy-${Env}
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Action:
+                  - logs:*
+                  - codebuild:*
+                  - lambda:*
+                  - apigateway:*
+                  - dynamodb:*
+                Resource:
+                  - !Sub arn:aws:logs:ap-northeast-1:${AWS::AccountId}:*
+                  - !Sub arn:aws:codebuild:ap-northeast-1:${AWS::AccountId}:*
+                  - !Sub arn:aws:lambda:ap-northeast-1:${AWS::AccountId}:*
+                  - !Sub arn:aws:apigateway:ap-northeast-1:${AWS::AccountId}:*
+                  - !Sub arn:aws:dynamodb:ap-northeast-1:${AWS::AccountId}:*
+                Effect: Allow
+              - Action:
+                  - s3:*
+                  - cloudformation:*
+                  - cognito-idp:*
+                  - iam:CreateRole
+                  - iam:DeleteRole
+                  - iam:DeleteRolePolicy
+                  - iam:PutRolePolicy
+                  - iam:GetRole
+                  - iam:PassRole
+                Resource:
+                  - "*"
+                Effect: Allow
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: ""
+            Effect: Allow
+            Principal:
+              Service: codebuild.amazonaws.com
+            Action: sts:AssumeRole
+
+  # CodePipeline
+  CodePipelineProject:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      Name: !Sub ${ServiceName}-${Env}
+      RoleArn: !GetAtt CodePipelineServiceRole.Arn
+      Stages:
+        - Name: Source
+          Actions:
+            - Name: SourceAction
+              ActionTypeId:
+                Category: Source
+                Owner: AWS
+                Version: 1
+                Provider: CodeStarSourceConnection
+              OutputArtifacts:
+                - Name: SourceArtifact
+              # デプロイもとのCodeCommitのリポジトリとブランチ
+              Configuration:
+                FullRepositoryId: !Ref GithubRepositoryId
+                ConnectionArn: !Ref GithubConnectionArn
+                BranchName: !Ref GithubRepositoryBranchName
+              RunOrder: 1
+        - Name: Build
+          Actions:
+            - Name: BuildAction
+              InputArtifacts:
+                - Name: SourceArtifact
+              OutputArtifacts:
+                - Name: BuildArtifact
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Version: 1
+                Provider: CodeBuild
+              Configuration:
+                ProjectName: !Ref CodeBuildProject
+              RunOrder: 2
+      ArtifactStore:
+        Type: S3
+        Location: !Ref ArtifactsBucket
+
+  CodePipelineServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${ServiceName}-CodePipelineServiceRole-${Env}
+      Policies:
+        - PolicyName: !Sub ${ServiceName}-CodePipelineServiceRolePolicy-${Env}
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Action:
+                  - s3:GetObject
+                  - s3:GetObjectVersion
+                  - s3:GetBucketVersioning
+                  - s3:PutObject
+                Resource:
+                  - arn:aws:s3:::codepipeline*
+                Effect: Allow
+              - Action:
+                  - codecommit:CancelUploadArchive
+                  - codecommit:GetBranch
+                  - codecommit:GetCommit
+                  - codecommit:GetUploadArchiveStatus
+                  - codecommit:UploadArchive
+                Resource:
+                  - "*"
+                Effect: Allow
+              - Action:
+                  - codebuild:BatchGetBuilds
+                  - codebuild:StartBuild
+                Resource:
+                  - "*"
+                Effect: Allow
+              - Action:
+                  - codedeploy:CreateDeployment
+                  - codedeploy:GetApplication
+                  - codedeploy:GetApplicationRevision
+                  - codedeploy:GetDeployment
+                  - codedeploy:GetDeploymentConfig
+                  - codedeploy:RegisterApplicationRevision
+                Resource:
+                  - "*"
+                Effect: Allow
+              - Action:
+                  - codestar-connections:UseConnection
+                Resource:
+                  - "*"
+                Effect: Allow
+              - Action:
+                  - s3:*
+                Resource:
+                  - "*"
+                Effect: Allow
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - codepipeline.amazonaws.com
+            Action:
+              - sts:AssumeRole

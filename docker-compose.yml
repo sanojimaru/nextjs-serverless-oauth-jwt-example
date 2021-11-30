@@ -1,0 +1,59 @@
+version: "3"
+services:
+  # dynamodb:
+  #   image: amazon/dynamodb-local
+  #   networks:
+  #     - local-network
+  #   ports:
+  #     - "8000:8000"
+  #   command: -jar DynamoDBLocal.jar -dbPath /data -sharedDb
+  #   volumes:
+  #     - ./data:/data
+
+  # dynamodb-admin:
+  #   container_name: dynamodb-admin
+  #   image: aaronshaf/dynamodb-admin:latest
+  #   environment:
+  #     - DYNAMO_ENDPOINT=dynamodb:8000
+  #   networks:
+  #     - local-network
+  #   ports:
+  #     - 8001:8001
+  #   depends_on:
+  #     - dynamodb
+
+  api:
+    build:
+      context: ./services/api
+    command: yarn run sls offline --host 0.0.0.0 --port 3000
+    volumes:
+      - ./services/api:/app
+      - /app/node_modules
+    networks:
+      - local-network
+    ports:
+      - 3000:3000
+    env_file:
+      - ./env/.env.local
+    # depends_on:
+    #   - dynamodb
+
+  # web-ui:
+  #   build:
+  #     context: ./services/web-ui
+  #   command: yarn serve
+  #   volumes:
+  #     - ./services/web-ui:/app
+  #     - /app/node_modules
+  #   networks:
+  #     - local-network
+  #   ports:
+  #     - 8080:8080
+  #   env_file:
+  #     - ./services/web-ui/env/.env.local
+  #   depends_on:
+  #     - cognitolocal
+
+networks:
+  local-network:
+    driver: bridge

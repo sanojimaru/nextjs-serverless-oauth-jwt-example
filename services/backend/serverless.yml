@@ -1,4 +1,4 @@
-service: sls-multiservice-ex-fe
+service: sls-multiservice-ex-be
 frameworkVersion: '2 || 3'
 
 provider:
@@ -23,10 +23,14 @@ plugins:
   - serverless-dotenv-plugin
   - serverless-bundle
   - serverless-offline
+  - serverless-deployment-bucket
 
 custom:
   defaultStage: dev
   defaultRegion: ${env:AWS_REGION}
+  deploymentBucket:
+    name: ${self:service}-deployment
+    serverSideEncryption: AES256
   bundle:
     packager: yarn
     tsConfig: ../../tsconfig.json

@@ -14,14 +14,19 @@ package:
 plugins:
   - serverless-dotenv-plugin
   - serverless-s3-sync
+  - serverless-deployment-bucket
 
 custom:
   defaultStage: dev
-  defaultRegion: ${ENV:AWS_REGION}
+  defaultRegion: ${env:AWS_REGION}
+  deploymentBucket:
+    name: ${self:service}-deployment
+    serverSideEncryption: AES256
   dotenv:
     path: ../../env
+  publishBucketName: ${self:service}-pub-${self:provider.stage}
   s3Sync:
-    - bucketName: ${self:service}-static-${self:provider.stage}
+    - bucketName: ${self:custom.publishBucketName}
       localDir: dist
 
 resources:
@@ -33,7 +38,7 @@ resources:
         WebsiteConfiguration:
           IndexDocument: index.html
           ErrorDocument: error.html
-        BucketName: ${self:custom.s3Sync.bucketName}
+        BucketName: ${self:custom.publishBucketName}
       DeletionPolicy: Retain
 
     BucketPolicy:

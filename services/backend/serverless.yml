@@ -1,4 +1,4 @@
-service: serverless-multiservice-example-frontend
+service: sls-multiservice-ex-fe
 frameworkVersion: '2 || 3'
 
 provider:

@@ -25,7 +25,7 @@ services:
   backend:
     build:
       context: ./services/backend
-    command: yarn run sls offline --host 0.0.0.0 --port 3000
+    command: yarn dev
     volumes:
       - ./services/backend:/app
       - /app/node_modules
@@ -37,6 +37,20 @@ services:
       - ./env/.env.local
     # depends_on:
     #   - dynamodb
+
+  frontend:
+    build:
+      context: ./services/frontend
+    command: yarn dev
+    volumes:
+      - ./services/frontend:/app
+      - /app/node_modules
+    networks:
+      - local-network
+    ports:
+      - 9000:9000
+    env_file:
+      - ./env/.env.local
 
   # web-ui:
   #   build:

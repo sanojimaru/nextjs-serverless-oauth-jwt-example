@@ -24,5 +24,8 @@
     "webpack": "^5.64.4",
     "webpack-cli": "^4.9.1",
     "webpack-dev-server": "^4.6.0"
+  },
+  "dependencies": {
+    "serverless-s3-sync": "^1.17.3"
   }
 }

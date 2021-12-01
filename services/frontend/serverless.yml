@@ -1,4 +1,4 @@
-service: ${env:SERVICE_NAME}-frontend
+service: serverless-multiservice-example-frontend
 frameworkVersion: '2 || 3'
 
 provider:
@@ -17,9 +17,55 @@ plugins:
 
 custom:
   defaultStage: dev
-  defaultRegion: ap-northeast-1
+  defaultRegion: ${ENV:AWS_REGION}
   dotenv:
     path: ../../env
   s3Sync:
     - bucketName: ${self:service}-static-${self:provider.stage}
       localDir: dist
+
+resources:
+  Resources:
+    S3Bucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        AccessControl: PublicRead
+        WebsiteConfiguration:
+          IndexDocument: index.html
+          ErrorDocument: error.html
+        BucketName: ${self:custom.s3Sync.bucketName}
+      DeletionPolicy: Retain
+
+    BucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        PolicyDocument:
+          Id: WebsiteDistributionPolicy
+          Version: '2012-10-17'
+          Statement:
+            - Sid: PublicReadForGetBucketObjects
+              Effect: Allow
+              Principal: '*'
+              Action: 's3:GetObject'
+              Resource: !Join
+                - ''
+                - - 'arn:aws:s3:::'
+                  - !Ref S3Bucket
+                  - /*
+        Bucket: !Ref S3Bucket
+
+  Outputs:
+    WebsiteURL:
+      Value: !GetAtt
+        - S3Bucket
+        - WebsiteURL
+      Description: URL for website hosted on S3
+
+    S3BucketSecureURL:
+      Value: !Join
+        - ''
+        - - 'https://'
+          - !GetAtt
+            - S3Bucket
+            - DomainName
+      Description: Name of S3 bucket to hold website content

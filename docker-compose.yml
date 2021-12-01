@@ -1,4 +1,4 @@
-version: "3"
+version: '3'
 services:
   # dynamodb:
   #   image: amazon/dynamodb-local
@@ -22,12 +22,12 @@ services:
   #   depends_on:
   #     - dynamodb
 
-  api:
+  backend:
     build:
-      context: ./services/api
+      context: ./services/backend
     command: yarn run sls offline --host 0.0.0.0 --port 3000
     volumes:
-      - ./services/api:/app
+      - ./services/backend:/app
       - /app/node_modules
     networks:
       - local-network

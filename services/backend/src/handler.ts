@@ -12,7 +12,7 @@ app.get('/', (_, res) =>
   })
 );
 
-app.use((_, res, _2) => {
+app.use((_, res) => {
   res.status(404).json({ error: 'NOT FOUND' });
 });
 

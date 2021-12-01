@@ -1,21 +1,53 @@
-service: javascript-sdk
+service: serverless-multiservice-example
 frameworkVersion: '2 || 3'
 
 provider:
   name: aws
   runtime: nodejs12.x
+  lambdaHashingVersion: '20201221'
   region: ${opt:region, self:custom.defaultRegion}
   stage: ${opt:stage, self:custom.defaultStage}
+  memorySize: 512
+  timeout: 10
+  logRetentionInDays: 90
+  logs:
+    httpApi: true
+  httpApi:
+    # metrics: true # Enable if you need
+    cors: true
+
+package:
+  individually: true
+
+plugins:
+  - serverless-dotenv-plugin
+  - serverless-bundle
+  - serverless-offline
 
 custom:
   defaultStage: dev
   defaultRegion: ap-northeast-1
+  bundle:
+    packager: yarn
+    tsConfig: ../../tsconfig.json
+    caching: false
+    linting: false
+  serverless-offline:
+    httpPort: 3000
+    noPrependStageInUrl: true
+  dotenv:
+    path: ./env
   client:
-    bucketName: ${self:service}-dist-${self:provider.stage}
+    bucketName: ${self:service}-static-${self:provider.stage}
     distributionFolder: dist
 
-plugins:
-  - serverless-finch
+functions:
+  backend:
+    handler: src/handler.handler
+    events:
+      - httpApi:
+          path: '/{proxy+}'
+          method: '*'
 
 resources:
   Resources:

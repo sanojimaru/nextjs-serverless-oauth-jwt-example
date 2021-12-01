@@ -1,8 +1,10 @@
 {
   "compilerOptions": {
-    "lib": ["es2017"],
-    "module": "esnext",
+    "target": "ESNext",
+    "module": "ESNext",
     "moduleResolution": "node",
+    "outDir": "dist",
+    "baseUrl": ".",
     "resolveJsonModule": true,
     "removeComments": true,
     "preserveConstEnums": true,
@@ -18,18 +20,14 @@
     "noUnusedParameters": true,
     "allowUnreachableCode": false,
     "noFallthroughCasesInSwitch": true,
-
-    "target": "es2017",
-    "outDir": "dist",
-    "declaration": true,
-    "sourceMap": true,
-    "baseUrl": ".",
-
-    "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
+    "newLine": "lf",
+    "noEmit": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
     "allowJs": false,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
   },
-  "exclude": ["./dist/**/*", "./node_modules/**/*"]
+  "exclude": ["node_modules", "**/*.test.ts"]
 }

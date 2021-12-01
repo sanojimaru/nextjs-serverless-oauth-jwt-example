@@ -1,4 +1,4 @@
-# nextjs-serverless-oauth-jwt-example
+# serverless multi-service example
 
 ## About
 

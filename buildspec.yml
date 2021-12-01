@@ -9,3 +9,4 @@ phases:
   build:
     commands:
       - yarn workspace api deploy:${DEPLOY_ENV}
+      - yarn workspace javascript-sdk deploy:${DEPLOY_ENV}

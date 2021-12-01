@@ -7,8 +7,8 @@
     "dev": "webpack serve --mode=development",
     "build:dev": "webpack --mode=development",
     "build:prd": "webpack --mode=production",
-    "deploy:dev": "sls deploy --stage dev",
-    "deploy:prd": "sls deploy --stage prd"
+    "deploy:dev": "webpack --mode=development && sls deploy --stage dev",
+    "deploy:prd": "webpack --mode=production && sls deploy --stage prd"
   },
   "keywords": [],
   "author": "",

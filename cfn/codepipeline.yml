@@ -48,7 +48,7 @@ Resources:
         Type: CODEPIPELINE
       Environment:
         ComputeType: BUILD_GENERAL1_SMALL
-        Image: aws/codebuild/standard:3.0
+        Image: aws/codebuild/amazonlinux2-x86_64-standard:3.0
         PrivilegedMode: true
         Type: LINUX_CONTAINER
         EnvironmentVariables:
@@ -63,7 +63,7 @@ Resources:
       Policies:
         - PolicyName: !Sub ${ServiceName}-CodeBuild-ServiceRolePolicy-${Env}
           PolicyDocument:
-            Version: "2012-10-17"
+            Version: '2012-10-17'
             Statement:
               - Action:
                   - logs:*
@@ -89,12 +89,12 @@ Resources:
                   - iam:GetRole
                   - iam:PassRole
                 Resource:
-                  - "*"
+                  - '*'
                 Effect: Allow
       AssumeRolePolicyDocument:
-        Version: "2012-10-17"
+        Version: '2012-10-17'
         Statement:
-          - Sid: ""
+          - Sid: ''
             Effect: Allow
             Principal:
               Service: codebuild.amazonaws.com
@@ -149,7 +149,7 @@ Resources:
       Policies:
         - PolicyName: !Sub ${ServiceName}-CodePipelineServiceRolePolicy-${Env}
           PolicyDocument:
-            Version: "2012-10-17"
+            Version: '2012-10-17'
             Statement:
               - Action:
                   - s3:GetObject
@@ -166,13 +166,13 @@ Resources:
                   - codecommit:GetUploadArchiveStatus
                   - codecommit:UploadArchive
                 Resource:
-                  - "*"
+                  - '*'
                 Effect: Allow
               - Action:
                   - codebuild:BatchGetBuilds
                   - codebuild:StartBuild
                 Resource:
-                  - "*"
+                  - '*'
                 Effect: Allow
               - Action:
                   - codedeploy:CreateDeployment
@@ -182,20 +182,20 @@ Resources:
                   - codedeploy:GetDeploymentConfig
                   - codedeploy:RegisterApplicationRevision
                 Resource:
-                  - "*"
+                  - '*'
                 Effect: Allow
               - Action:
                   - codestar-connections:UseConnection
                 Resource:
-                  - "*"
+                  - '*'
                 Effect: Allow
               - Action:
                   - s3:*
                 Resource:
-                  - "*"
+                  - '*'
                 Effect: Allow
       AssumeRolePolicyDocument:
-        Version: "2012-10-17"
+        Version: '2012-10-17'
         Statement:
           - Effect: Allow
             Principal:

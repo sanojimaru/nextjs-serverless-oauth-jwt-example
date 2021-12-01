@@ -7,8 +7,6 @@ ROOT_DIR=$(dirname $SCRIPT_DIR)
 
 source $ROOT_DIR/env/.env.local
 
-echo $GITHUB_CONNECTION_ARN
-
 if [ $# -eq 1 ]; then
   echo "set env=$1" 1>&2
   ENV_VALUE=$1

@@ -14,14 +14,14 @@ module.exports = {
     static: {
       directory: path.join(__dirname, 'dist'),
     },
-    port: 9000,
+    port: 8001,
   },
   module: {
     rules: [
       {
-        test: /\.(ts|js)$/,
+        test: /\.(ts)$/,
         exclude: /node_modules/,
-        loader: 'babel-loader',
+        use: [{ loader: 'babel-loader' }, { loader: 'ts-loader' }],
       },
     ],
   },

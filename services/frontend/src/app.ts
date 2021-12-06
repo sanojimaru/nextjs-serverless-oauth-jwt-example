@@ -1,8 +1,18 @@
 interface App {
-    log: void;
+  log: () => void;
+  test: () => void;
 }
 
-global.window.App = {
-    log: console.log('debgu'),
+declare global {
+  interface Window {
+    app: App;
+  }
+}
+
+const app: App = {
+  log: () => console.log('debug'),
+  test: () => console.log('test'),
 };
-export default App;
+
+window.app = app;
+export default app;

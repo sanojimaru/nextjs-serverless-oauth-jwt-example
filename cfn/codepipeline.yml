@@ -4,7 +4,7 @@ Parameters:
   ServiceName:
     Description: serverless framework deploy pipeline example
     Type: String
-    Default: serverless-deploy-example
+    Default: serverless-framework-example
 
   Env:
     Type: String
@@ -27,7 +27,6 @@ Parameters:
       - main
 
 Resources:
-  # ビルド成果物を格納するS3バケット
   ArtifactsBucket:
     Type: AWS::S3::Bucket
     Properties:
@@ -37,7 +36,7 @@ Resources:
           - Id: DeleteRule
             Status: Enabled
             ExpirationInDays: 7
-  # CodeBuild
+
   CodeBuildProject:
     Type: AWS::CodeBuild::Project
     Properties:
@@ -55,7 +54,7 @@ Resources:
           - Name: DEPLOY_ENV
             Value: !Sub ${Env}
       ServiceRole: !GetAtt CodeBuildServiceRole.Arn
-  # CodeBuildのIAMロール
+
   CodeBuildServiceRole:
     Type: AWS::IAM::Role
     Properties:
@@ -92,7 +91,6 @@ Resources:
               Service: codebuild.amazonaws.com
             Action: sts:AssumeRole
 
-  # CodePipeline
   CodePipelineProject:
     Type: AWS::CodePipeline::Pipeline
     Properties:
